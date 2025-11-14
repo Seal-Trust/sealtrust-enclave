@@ -12,6 +12,7 @@ use fastcrypto::traits::KeyPair;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use tower_http::cors::{CorsLayer, Any};
 use truthmarket_nautilus::{process_data, AppState};
 
 #[tokio::main]
@@ -29,9 +30,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         api_key: "local-dev-key".to_string(),
     });
 
+    // Configure CORS to allow requests from frontend
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
     let app = Router::new()
         .route("/process_data", post(process_data))
         .route("/health", get(|| async { "OK" }))
+        .layer(cors)
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
