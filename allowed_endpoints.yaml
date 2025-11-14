@@ -1,0 +1,13 @@
+# Network access configuration for TruthMarket Nautilus Enclave
+# Only these endpoints are allowed for HTTP/HTTPS requests
+
+endpoints:
+  # Dataset hosting domains (add your actual dataset sources)
+  - datasets.example.com
+  - data.truthmarket.ai
+
+  # Walrus testnet aggregator (if fetching from Walrus directly)
+  - aggregator.walrus-testnet.walrus.space
+
+  # Add any other data sources as needed
+  # - api.yourdatasource.com
