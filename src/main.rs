@@ -13,7 +13,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tower_http::cors::{CorsLayer, Any};
-use truthmarket_nautilus::{process_data, AppState};
+use truthmarket_nautilus::{process_data, verify_metadata, AppState};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -37,7 +37,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/process_data", post(process_data))
+        .route("/process_data", post(process_data))        // Legacy endpoint (deprecated)
+        .route("/verify_metadata", post(verify_metadata))  // V3 Architecture endpoint
         .route("/health", get(|| async { "OK" }))
         .layer(cors)
         .with_state(state);
@@ -47,8 +48,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("🚀 TruthMarket Nautilus server listening on http://{}", addr);
     println!("📡 Endpoints:");
-    println!("   POST /process_data - Verify dataset and return signed hash");
-    println!("   GET  /health       - Health check");
+    println!("   POST /verify_metadata - [V3] Verify and sign metadata (RECOMMENDED)");
+    println!("   POST /process_data    - [Legacy] Verify dataset and return signed hash");
+    println!("   GET  /health          - Health check");
 
     axum::serve(listener, app).await?;
 

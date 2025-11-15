@@ -57,13 +57,19 @@ impl axum::response::IntoResponse for EnclaveError {
 }
 
 /// Inner type for IntentMessage<T> - MUST match Move contract exactly
+/// V3 Architecture: Verify metadata only (not fetch datasets)
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DatasetVerification {
-    pub dataset_hash: Vec<u8>,
-    pub dataset_url: Vec<u8>,
-    pub format: Vec<u8>,
-    pub schema_version: Vec<u8>,
-    pub verification_timestamp: u64,
+    pub dataset_id: Vec<u8>,          // Unique dataset ID
+    pub name: Vec<u8>,                // Dataset name
+    pub description: Vec<u8>,          // Dataset description
+    pub format: Vec<u8>,              // File format
+    pub size: u64,                    // File size in bytes
+    pub original_hash: Vec<u8>,       // Hash of UNENCRYPTED file
+    pub walrus_blob_id: Vec<u8>,      // Walrus storage ID
+    pub seal_policy_id: Vec<u8>,      // Seal access policy ID
+    pub timestamp: u64,               // Verification timestamp
+    pub uploader: Vec<u8>,            // Uploader address
 }
 
 /// Inner type for ProcessDataRequest<T>
@@ -73,6 +79,12 @@ pub struct DatasetRequest {
     pub expected_hash: Option<String>,
     pub format: String,
     pub schema_version: String,
+}
+
+/// V3 Architecture: Metadata verification request
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MetadataVerificationRequest {
+    pub metadata: DatasetVerification,
 }
 
 pub async fn process_data(
@@ -115,13 +127,76 @@ pub async fn process_data(
     Ok(Json(to_signed_response(
         &state.eph_kp,
         DatasetVerification {
-            dataset_hash,
-            dataset_url: dataset_url.as_bytes().to_vec(),
+            dataset_id: b"legacy".to_vec(),
+            name: dataset_url.as_bytes().to_vec(),
+            description: b"Legacy endpoint - use verify_metadata instead".to_vec(),
             format: request.payload.format.as_bytes().to_vec(),
-            schema_version: request.payload.schema_version.as_bytes().to_vec(),
-            verification_timestamp: current_timestamp,
+            size: dataset_content.len() as u64,
+            original_hash: dataset_hash,
+            walrus_blob_id: b"".to_vec(),
+            seal_policy_id: b"".to_vec(),
+            timestamp: current_timestamp,
+            uploader: b"".to_vec(),
         },
         current_timestamp,
+        IntentScope::ProcessData,
+    )))
+}
+
+/// V3 Architecture: Verify metadata and sign (no dataset fetching)
+/// This is the NEW endpoint that should be used for production
+pub async fn verify_metadata(
+    State(state): State<Arc<AppState>>,
+    Json(request): Json<MetadataVerificationRequest>,
+) -> Result<Json<ProcessedDataResponse<IntentMessage<DatasetVerification>>>, EnclaveError> {
+    info!("Verifying dataset metadata (V3 architecture)");
+
+    let metadata = request.metadata;
+
+    // Validate metadata fields
+    if metadata.dataset_id.is_empty() {
+        return Err(EnclaveError::GenericError("dataset_id cannot be empty".to_string()));
+    }
+
+    if metadata.name.is_empty() {
+        return Err(EnclaveError::GenericError("name cannot be empty".to_string()));
+    }
+
+    if metadata.original_hash.is_empty() {
+        return Err(EnclaveError::GenericError("original_hash cannot be empty".to_string()));
+    }
+
+    if metadata.walrus_blob_id.is_empty() {
+        return Err(EnclaveError::GenericError("walrus_blob_id cannot be empty".to_string()));
+    }
+
+    if metadata.seal_policy_id.is_empty() {
+        return Err(EnclaveError::GenericError("seal_policy_id cannot be empty".to_string()));
+    }
+
+    if metadata.uploader.is_empty() {
+        return Err(EnclaveError::GenericError("uploader cannot be empty".to_string()));
+    }
+
+    // Log verification details
+    info!(
+        "Metadata verification - dataset_id: {:?}, name: {:?}, size: {} bytes, walrus_blob_id: {:?}",
+        String::from_utf8_lossy(&metadata.dataset_id),
+        String::from_utf8_lossy(&metadata.name),
+        metadata.size,
+        String::from_utf8_lossy(&metadata.walrus_blob_id)
+    );
+
+    // Use the timestamp from metadata (client-provided)
+    let timestamp = metadata.timestamp;
+
+    info!("Metadata verified successfully, signing...");
+
+    // Sign the metadata and return
+    Ok(Json(to_signed_response(
+        &state.eph_kp,
+        metadata,
+        timestamp,
         IntentScope::ProcessData,
     )))
 }
@@ -133,13 +208,18 @@ mod tests {
 
     #[tokio::test]
     async fn test_serde() {
-        // CRITICAL: Serialization should be consistent with move test see `fun test_serde` in `truthmarket.move`.
+        // CRITICAL: Serialization should be consistent with move test see `fun test_bcs_serialization_consistency` in `truthmarket.move`.
         let payload = DatasetVerification {
-            dataset_hash: vec![0x12, 0x34, 0x56, 0x78],
-            dataset_url: b"https://datasets.example.com/data.csv".to_vec(),
+            dataset_id: b"test-123".to_vec(),
+            name: b"test.csv".to_vec(),
+            description: b"Test dataset".to_vec(),
             format: b"CSV".to_vec(),
-            schema_version: b"v1.0".to_vec(),
-            verification_timestamp: 1700000000000,
+            size: 1024,
+            original_hash: b"abc123".to_vec(),
+            walrus_blob_id: b"blob-123".to_vec(),
+            seal_policy_id: b"policy-123".to_vec(),
+            timestamp: 1700000000000,
+            uploader: b"0xA".to_vec(),
         };
         let timestamp = 1700000000000;
         let intent_msg = IntentMessage::new(payload, timestamp, IntentScope::ProcessData);
@@ -181,11 +261,16 @@ mod tests {
     fn test_dataset_verification_bcs_serialization() {
         // Test that DatasetVerification serializes correctly
         let verification = DatasetVerification {
-            dataset_hash: vec![0xAA, 0xBB, 0xCC, 0xDD],
-            dataset_url: b"https://example.com/test.csv".to_vec(),
+            dataset_id: b"test-456".to_vec(),
+            name: b"example.csv".to_vec(),
+            description: b"Example dataset".to_vec(),
             format: b"CSV".to_vec(),
-            schema_version: b"v1.0".to_vec(),
-            verification_timestamp: 1234567890000,
+            size: 2048,
+            original_hash: vec![0xAA, 0xBB, 0xCC, 0xDD],
+            walrus_blob_id: b"walrus-blob-456".to_vec(),
+            seal_policy_id: b"seal-policy-456".to_vec(),
+            timestamp: 1234567890000,
+            uploader: b"0xB".to_vec(),
         };
 
         let bytes = bcs::to_bytes(&verification).expect("BCS serialization should succeed");
@@ -194,22 +279,32 @@ mod tests {
         let deserialized: DatasetVerification = bcs::from_bytes(&bytes)
             .expect("BCS deserialization should succeed");
 
-        assert_eq!(verification.dataset_hash, deserialized.dataset_hash);
-        assert_eq!(verification.dataset_url, deserialized.dataset_url);
+        assert_eq!(verification.dataset_id, deserialized.dataset_id);
+        assert_eq!(verification.name, deserialized.name);
+        assert_eq!(verification.description, deserialized.description);
+        assert_eq!(verification.original_hash, deserialized.original_hash);
+        assert_eq!(verification.walrus_blob_id, deserialized.walrus_blob_id);
+        assert_eq!(verification.seal_policy_id, deserialized.seal_policy_id);
         assert_eq!(verification.format, deserialized.format);
-        assert_eq!(verification.schema_version, deserialized.schema_version);
-        assert_eq!(verification.verification_timestamp, deserialized.verification_timestamp);
+        assert_eq!(verification.size, deserialized.size);
+        assert_eq!(verification.timestamp, deserialized.timestamp);
+        assert_eq!(verification.uploader, deserialized.uploader);
     }
 
     #[test]
     fn test_intent_message_structure() {
         // Test IntentMessage wrapper structure
         let payload = DatasetVerification {
-            dataset_hash: vec![0x11, 0x22, 0x33, 0x44],
-            dataset_url: b"https://test.com/data.json".to_vec(),
+            dataset_id: b"test-789".to_vec(),
+            name: b"data.json".to_vec(),
+            description: b"Test JSON dataset".to_vec(),
             format: b"JSON".to_vec(),
-            schema_version: b"v2.0".to_vec(),
-            verification_timestamp: 1700000000000,
+            size: 4096,
+            original_hash: vec![0x11, 0x22, 0x33, 0x44],
+            walrus_blob_id: b"walrus-789".to_vec(),
+            seal_policy_id: b"seal-789".to_vec(),
+            timestamp: 1700000000000,
+            uploader: b"0xC".to_vec(),
         };
 
         let timestamp = 1700000000000;
@@ -217,7 +312,7 @@ mod tests {
 
         // Verify fields
         assert_eq!(intent_msg.timestamp_ms, timestamp);
-        assert_eq!(intent_msg.data.dataset_hash, payload.dataset_hash);
+        assert_eq!(intent_msg.data.original_hash, payload.original_hash);
 
         // Verify serialization produces consistent output
         let bytes1 = bcs::to_bytes(&intent_msg).expect("should serialize");
@@ -296,19 +391,29 @@ mod tests {
     fn test_bcs_encoding_consistency() {
         // Test that identical structs produce identical BCS bytes
         let verification1 = DatasetVerification {
-            dataset_hash: vec![0xDE, 0xAD, 0xBE, 0xEF],
-            dataset_url: b"https://consistent.test/data.csv".to_vec(),
+            dataset_id: b"consistent-test".to_vec(),
+            name: b"data.csv".to_vec(),
+            description: b"Consistency test".to_vec(),
             format: b"CSV".to_vec(),
-            schema_version: b"v1.0".to_vec(),
-            verification_timestamp: 9999999999999,
+            size: 9999,
+            original_hash: vec![0xDE, 0xAD, 0xBE, 0xEF],
+            walrus_blob_id: b"walrus-consistent".to_vec(),
+            seal_policy_id: b"seal-consistent".to_vec(),
+            timestamp: 9999999999999,
+            uploader: b"0xDEADBEEF".to_vec(),
         };
 
         let verification2 = DatasetVerification {
-            dataset_hash: vec![0xDE, 0xAD, 0xBE, 0xEF],
-            dataset_url: b"https://consistent.test/data.csv".to_vec(),
+            dataset_id: b"consistent-test".to_vec(),
+            name: b"data.csv".to_vec(),
+            description: b"Consistency test".to_vec(),
             format: b"CSV".to_vec(),
-            schema_version: b"v1.0".to_vec(),
-            verification_timestamp: 9999999999999,
+            size: 9999,
+            original_hash: vec![0xDE, 0xAD, 0xBE, 0xEF],
+            walrus_blob_id: b"walrus-consistent".to_vec(),
+            seal_policy_id: b"seal-consistent".to_vec(),
+            timestamp: 9999999999999,
+            uploader: b"0xDEADBEEF".to_vec(),
         };
 
         let bytes1 = bcs::to_bytes(&verification1).expect("should serialize");
@@ -321,15 +426,20 @@ mod tests {
     fn test_timestamp_handling() {
         // Test that timestamp changes affect serialization
         let base_verification = DatasetVerification {
-            dataset_hash: vec![0xFF],
-            dataset_url: b"https://test.com/data.csv".to_vec(),
+            dataset_id: b"timestamp-test".to_vec(),
+            name: b"data.csv".to_vec(),
+            description: b"Timestamp test".to_vec(),
             format: b"CSV".to_vec(),
-            schema_version: b"v1.0".to_vec(),
-            verification_timestamp: 1000,
+            size: 1000,
+            original_hash: vec![0xFF],
+            walrus_blob_id: b"walrus-ts".to_vec(),
+            seal_policy_id: b"seal-ts".to_vec(),
+            timestamp: 1000,
+            uploader: b"0xFF".to_vec(),
         };
 
         let different_timestamp = DatasetVerification {
-            verification_timestamp: 2000,
+            timestamp: 2000,
             ..base_verification.clone()
         };
 
