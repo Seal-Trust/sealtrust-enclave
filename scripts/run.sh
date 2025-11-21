@@ -11,6 +11,16 @@
 set -e # Exit immediately if a command exits with a non-zero status
 
 echo "🚀 TruthMarket Nautilus Enclave starting..."
+
+# Signal ready to Nitro hypervisor (send heartbeat 0xB7 to CID 3, port 9000)
+# This is required for nitro-cli to know the enclave booted successfully
+echo "Sending Nitro heartbeat..."
+printf '\xB7' | socat - VSOCK-CONNECT:3:9000 || echo "Heartbeat sent (or skipped if not in enclave)"
+
+# Load NSM kernel module for attestation
+echo "Loading NSM kernel module..."
+busybox insmod /nsm.ko || echo "NSM module already loaded or not available"
+
 export PYTHONPATH=/lib/python3.11:/usr/local/lib/python3.11/lib-dynload:/usr/local/lib/python3.11/site-packages:/lib
 export LD_LIBRARY_PATH=/lib:$LD_LIBRARY_PATH
 
