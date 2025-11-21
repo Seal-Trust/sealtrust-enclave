@@ -54,8 +54,13 @@ FROM base as build
 COPY . /app
 WORKDIR /app
 
-# Build TruthMarket Nautilus server
+# Build TruthMarket Nautilus server and init binary
 ENV RUSTFLAGS="-C target-feature=+crt-static -C relocation-model=static -C target-cpu=x86-64"
+
+# Build the init binary (PID 1 process that sends heartbeat and runs run.sh)
+RUN cargo build --locked --release --target x86_64-unknown-linux-musl --manifest-path /app/src/init/Cargo.toml
+
+# Build the main nautilus-server
 RUN cargo build --locked --release --target x86_64-unknown-linux-musl
 
 # Create initramfs with all necessary files
@@ -71,7 +76,9 @@ COPY --from=core-busybox /bin/sh initramfs/sh
 COPY --from=user-jq /bin/jq initramfs
 COPY --from=user-socat /bin/socat . initramfs
 
-# Copy TruthMarket Nautilus binary
+# Copy TruthMarket binaries
+# init binary is PID 1 - it mounts filesystems, sends heartbeat, loads NSM, then runs run.sh
+RUN cp /app/src/init/target/${TARGET}/release/init initramfs/init
 RUN cp /app/target/${TARGET}/release/nautilus-server initramfs/nautilus-server
 RUN cp /app/scripts/run.sh initramfs/
 
