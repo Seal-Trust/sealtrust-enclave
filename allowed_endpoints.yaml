@@ -1,13 +1,17 @@
 # Network access configuration for TruthMarket Nautilus Enclave
-# Only these endpoints are allowed for HTTP/HTTPS requests
+# Only these endpoints are allowed for HTTP/HTTPS requests from within the enclave
+#
+# IMPORTANT: The Nautilus enclave does NOT download datasets!
+# It only receives metadata and signs it. No external HTTP requests needed.
+#
+# However, if you plan to extend functionality in the future, configure endpoints here.
 
 endpoints:
-  # Dataset hosting domains (add your actual dataset sources)
-  - datasets.example.com
-  - data.truthmarket.ai
+  # Currently TruthMarket Nautilus doesn't make external HTTP requests
+  # Metadata is sent TO the enclave, not fetched BY the enclave
 
-  # Walrus testnet aggregator (if fetching from Walrus directly)
-  - aggregator.walrus-testnet.walrus.space
-
-  # Add any other data sources as needed
-  # - api.yourdatasource.com
+  # Uncomment below if you add features that require external access:
+  # - aggregator.walrus-testnet.walrus.space  # Walrus testnet
+  # - api.sui.io                               # Sui RPC (if needed)
+  # - kms.us-east-1.amazonaws.com             # AWS KMS (auto-configured by setup script)
+  # - secretsmanager.us-east-1.amazonaws.com  # AWS Secrets (auto-configured)

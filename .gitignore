@@ -21,3 +21,16 @@ Thumbs.db
 *.bak
 *.backup
 *.tests-backup
+
+# Environment and secrets
+.env
+.env.local
+.env.production
+.enclave_key.json
+
+# Docker volumes
+.docker/
+
+# Enclave artifacts (AWS)
+*.eif
+*.pcr

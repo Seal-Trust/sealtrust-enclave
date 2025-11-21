@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  nautilus-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: nautilus-app-dev
+    ports:
+      - "${SERVER_PORT:-3000}:3000"
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+      - DEV_MODE=${DEV_MODE:-true}
+      - SERVER_PORT=3000
+      - BIND_ADDRESS=0.0.0.0
+    volumes:
+      # Mount source code for hot reload during development
+      - ../src:/app/src:ro
+      - ../Cargo.toml:/app/Cargo.toml:ro
+      - ../allowed_endpoints.yaml:/app/allowed_endpoints.yaml:ro
+      # Persist enclave key across restarts
+      - ../.enclave_key.json:/app/.enclave_key.json
+    networks:
+      - nautilus-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health_check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  nautilus-network:
+    name: nautilus-dev-network

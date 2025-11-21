@@ -1,0 +1,85 @@
+# TruthMarket Nautilus Enclave - AWS Build
+# Based on official Nautilus Makefile
+# Builds reproducible .eif file for AWS Nitro Enclaves
+
+REGISTRY := truthmarket
+
+.DEFAULT_GOAL := help
+.PHONY: help
+help:
+	@echo "TruthMarket Nautilus - AWS Nitro Enclave Build"
+	@echo ""
+	@echo "Usage:"
+	@echo "  make build      - Build .eif file (requires Docker)"
+	@echo "  make run        - Run enclave (requires AWS EC2 with Nitro)"
+	@echo "  make run-debug  - Run enclave with debug console"
+	@echo "  make clean      - Clean build artifacts"
+	@echo ""
+	@echo "Prerequisites:"
+	@echo "  - Docker installed"
+	@echo "  - AWS Nitro CLI (for run commands)"
+	@echo "  - Run on AWS EC2 instance with Nitro Enclaves enabled"
+
+out:
+	mkdir -p out
+
+.PHONY: build
+build: out/nitro.eif
+
+out/enclaveos.tar: out
+	@echo "Building TruthMarket Nautilus enclave image..."
+	docker build \
+		--tag $(REGISTRY)/nautilus \
+		--progress=plain \
+		--platform linux/amd64 \
+		--output type=local,rewrite-timestamp=true,dest=out \
+		-f docker/Containerfile.aws \
+		.
+	@echo "✅ Enclave image built: out/enclaveos.tar"
+
+out/nitro.eif: out/enclaveos.tar
+	@echo "✅ Enclave .eif file ready: out/nitro.eif"
+	@echo "✅ PCR measurements saved: out/nitro.pcrs"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Copy out/nitro.eif to your AWS EC2 instance"
+	@echo "  2. Run: make run (or make run-debug for debugging)"
+
+.PHONY: run
+run: out/nitro.eif
+	@echo "Running TruthMarket Nautilus enclave..."
+	sudo nitro-cli \
+		run-enclave \
+		--cpu-count 2 \
+		--memory 512M \
+		--eif-path out/nitro.eif
+	@echo "✅ Enclave started"
+	@echo "Run: nitro-cli describe-enclaves"
+
+.PHONY: run-debug
+run-debug: out/nitro.eif
+	@echo "Running TruthMarket Nautilus enclave in DEBUG mode..."
+	@echo "⚠️  WARNING: Debug mode is NOT production-safe!"
+	sudo nitro-cli \
+		run-enclave \
+		--cpu-count 2 \
+		--memory 512M \
+		--eif-path out/nitro.eif \
+		--debug-mode \
+		--attach-console
+
+.PHONY: clean
+clean:
+	@echo "Cleaning build artifacts..."
+	rm -rf out
+	@echo "✅ Clean complete"
+
+.PHONY: pcrs
+pcrs: out/nitro.pcrs
+	@echo "PCR Measurements for Enclave Configuration:"
+	@cat out/nitro.pcrs
+
+.PHONY: status
+status:
+	@echo "Checking enclave status..."
+	@sudo nitro-cli describe-enclaves || echo "No enclaves running"
