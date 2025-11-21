@@ -4,6 +4,9 @@
 pub mod common;
 
 use common::{to_signed_response, IntentMessage, IntentScope, ProcessDataRequest, ProcessedDataResponse};
+
+// Re-export attestation and health_check functions from common
+pub use common::{get_attestation, health_check};
 use axum::extract::State;
 use axum::Json;
 use fastcrypto::encoding::{Encoding, Hex};

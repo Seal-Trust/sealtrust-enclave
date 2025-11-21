@@ -13,7 +13,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tower_http::cors::{CorsLayer, Any};
-use truthmarket_nautilus::{process_data, verify_metadata, AppState};
+use truthmarket_nautilus::{process_data, verify_metadata, get_attestation, health_check, AppState};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -39,7 +39,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/process_data", post(process_data))        // Legacy endpoint (deprecated)
         .route("/verify_metadata", post(verify_metadata))  // V3 Architecture endpoint
-        .route("/health", get(|| async { "OK" }))
+        .route("/get_attestation", get(get_attestation))   // NSM attestation for on-chain registration
+        .route("/health_check", get(health_check))         // Full health check with endpoint status
+        .route("/health", get(|| async { "OK" }))          // Simple health check
         .layer(cors)
         .with_state(state);
 
