@@ -64,7 +64,7 @@ export AWS_DEFAULT_REGION="$REGION"
 # Default AMI for us-east-1 (Amazon Linux 2 with Nitro Enclaves support)
 AMI_ID="${AMI_ID:-ami-085ad6ae776d8f09c}"
 
-ALLOWLIST_PATH="../allowed_endpoints.yaml"
+ALLOWLIST_PATH="./allowed_endpoints.yaml"
 
 ############################
 # Cleanup Old Files
@@ -243,7 +243,7 @@ SECURITY_GROUP_ID=$(aws ec2 describe-security-groups \
   --region "$REGION" \
   --group-names "$SECURITY_GROUP_NAME" \
   --query "SecurityGroups[0].GroupId" \
-  --output text 2>/dev/null)
+  --output text 2>/dev/null || echo "")
 
 if [ "$SECURITY_GROUP_ID" = "None" ] || [ -z "$SECURITY_GROUP_ID" ]; then
   echo "Creating security group $SECURITY_GROUP_NAME..."
@@ -278,7 +278,7 @@ echo "🚀 Launching EC2 instance with Nitro Enclaves enabled..."
 INSTANCE_ID=$(aws ec2 run-instances \
   --region "$REGION" \
   --image-id "$AMI_ID" \
-  --instance-type m5.xlarge \
+  --instance-type m5a.xlarge \
   --key-name "$KEY_PAIR" \
   --user-data file://user-data.sh \
   --block-device-mappings '[{"DeviceName":"/dev/xvda","Ebs":{"VolumeSize":200}}]' \

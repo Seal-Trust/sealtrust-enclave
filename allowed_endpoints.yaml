@@ -6,10 +6,10 @@
 #
 # However, if you plan to extend functionality in the future, configure endpoints here.
 
-endpoints:
+endpoints: []
   # Currently TruthMarket Nautilus doesn't make external HTTP requests
   # Metadata is sent TO the enclave, not fetched BY the enclave
-
+  #
   # Uncomment below if you add features that require external access:
   # - aggregator.walrus-testnet.walrus.space  # Walrus testnet
   # - api.sui.io                               # Sui RPC (if needed)
