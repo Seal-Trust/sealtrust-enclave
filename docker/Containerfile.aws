@@ -72,7 +72,7 @@ COPY --from=user-jq /bin/jq initramfs
 COPY --from=user-socat /bin/socat . initramfs
 
 # Copy TruthMarket Nautilus binary
-RUN cp /app/target/${TARGET}/release/nautilus-app initramfs/nautilus-server
+RUN cp /app/target/${TARGET}/release/nautilus-server initramfs/nautilus-server
 RUN cp /app/scripts/run.sh initramfs/
 
 # Create initramfs archive
