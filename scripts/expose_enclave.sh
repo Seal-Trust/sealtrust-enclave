@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright (c), TruthMarket
+# Copyright (c), SealTrust
 # SPDX-License-Identifier: Apache-2.0
 #
-# TruthMarket Nautilus - Expose Enclave
+# SealTrust Nautilus - Expose Enclave
 # This script runs on the AWS EC2 instance (parent) and:
 # - Gets the running enclave's CID
 # - Sends empty secrets.json to enclave via VSOCK
@@ -10,7 +10,7 @@
 
 set -e
 
-echo "🔌 Exposing TruthMarket Nautilus enclave to the internet..."
+echo "🔌 Exposing SealTrust Nautilus enclave to the internet..."
 
 # Get the enclave ID and CID
 # Expects there to be only one enclave running
@@ -31,7 +31,7 @@ echo "   CID: $ENCLAVE_CID"
 sleep 5
 
 # Send secrets.json to enclave via VSOCK port 7777
-# TruthMarket doesn't use external APIs, so we send empty JSON
+# SealTrust doesn't use external APIs, so we send empty JSON
 echo "📦 Sending secrets.json to enclave..."
 echo '{}' > secrets.json
 cat secrets.json | socat - VSOCK-CONNECT:$ENCLAVE_CID:7777
@@ -47,7 +47,7 @@ echo "✅ Enclave exposed on port 3000 (socat PID: $SOCAT_PID)"
 
 echo ""
 echo "═══════════════════════════════════════════════════════"
-echo "✅ TruthMarket Nautilus is now accessible!"
+echo "✅ SealTrust Nautilus is now accessible!"
 echo "═══════════════════════════════════════════════════════"
 echo ""
 echo "Test the enclave:"

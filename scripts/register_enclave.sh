@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright (c), TruthMarket
+# Copyright (c), SealTrust
 # SPDX-License-Identifier: Apache-2.0
 #
-# TruthMarket Nautilus - Register Enclave On-Chain
+# SealTrust Nautilus - Register Enclave On-Chain
 # This script registers the enclave on Sui blockchain using attestation
 
 set -e
@@ -17,16 +17,16 @@ if [ "$#" -ne 6 ]; then
     echo "    0x... \\"
     echo "    0x... \\"
     echo "    http://3.88.45.123:3000 \\"
-    echo "    truthmarket \\"
-    echo "    TRUTHMARKET"
+    echo "    sealtrust \\"
+    echo "    SEALTRUST"
     echo ""
     echo "Parameters:"
     echo "  enclave_package_id  - Enclave Move package ID (deployed)"
-    echo "  app_package_id      - TruthMarket verification package ID"
+    echo "  app_package_id      - SealTrust verification package ID"
     echo "  enclave_config_id   - EnclaveConfig object ID (from init)"
     echo "  enclave_url         - Public URL of your enclave"
-    echo "  module_name         - Move module name (usually 'truthmarket')"
-    echo "  otw_name            - One-time witness name (usually 'TRUTHMARKET')"
+    echo "  module_name         - Move module name (usually 'sealtrust')"
+    echo "  otw_name            - One-time witness name (usually 'SEALTRUST')"
     exit 1
 fi
 
@@ -38,7 +38,7 @@ MODULE_NAME=$5
 OTW_NAME=$6
 
 echo "═══════════════════════════════════════════════════════"
-echo "  TruthMarket Nautilus - On-Chain Registration"
+echo "  SealTrust Nautilus - On-Chain Registration"
 echo "═══════════════════════════════════════════════════════"
 echo ""
 echo "Parameters:"
