@@ -244,14 +244,31 @@ sudo systemctl start nautilus
 
 ---
 
-## Production Deployment
+## Production Deployment (Sui Testnet)
 
 | Component | Value |
 |-----------|-------|
-| URL | `http://13.217.44.235:3000` |
-| Instance | AWS EC2 with Nitro |
-| CPU | 2 cores dedicated |
-| Memory | 512MB |
+| **Enclave URL** | `http://13.217.44.235:3000` |
+| **Instance Type** | `m5a.xlarge` |
+| **Region** | `ap-northeast-1` |
+| **CPU** | 2 cores dedicated |
+| **Memory** | 1024 MiB |
+
+### On-Chain Objects
+
+| Object | ID |
+|--------|-----|
+| **Enclave** | `0x611b83f2b4d97471a6c164877ff23a2f0570806baf3d9380d1f11433a2b685ec` |
+| **EnclaveConfig** | `0x55d6a15a5e8822b39f76dc53031d83beddc1e5b0e3ef804b82e8d4bfe4fbdc32` |
+| **SealTrust Package** | `0xcdc25c90e328f2905c97c01e90424395dd7b10e67769fc8f4ae62b87f1e63e4e` |
+
+### PCR Measurements
+
+```
+PCR0: b13c459767dfa980fc070317cced783437b0198963564bd5f906a5b35f209f8104e1ddbc64ad0615842c6a243e0b6758
+PCR1: b13c459767dfa980fc070317cced783437b0198963564bd5f906a5b35f209f8104e1ddbc64ad0615842c6a243e0b6758
+PCR2: 21b9efbc184807662e966d34f390821309eeac6802309798826296bf3e8bec7c10edb30948c90ba67310f7b964fc500a
+```
 
 ---
 
