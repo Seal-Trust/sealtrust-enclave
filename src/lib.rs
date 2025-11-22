@@ -211,7 +211,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_serde() {
-        // CRITICAL: Serialization should be consistent with move test see `fun test_bcs_serialization_consistency` in `truthmarket.move`.
+        // CRITICAL: Serialization should be consistent with move test see `fun test_bcs_serialization_consistency` in `sealtrust.move`.
         let payload = DatasetVerification {
             dataset_id: b"test-123".to_vec(),
             name: b"test.csv".to_vec(),

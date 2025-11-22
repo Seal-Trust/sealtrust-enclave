@@ -221,8 +221,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
 
 # Clone your repo
-git clone https://github.com/yourrepo/truthMarket
-cd truthMarket/nautilus-app
+git clone https://github.com/Seal-Trust/sealtrust-enclave
+cd sealtrust-enclave
 
 # Build release binary
 cargo build --release
@@ -326,7 +326,7 @@ After=network.target nitro-enclaves-allocator.service
 [Service]
 Type=forking
 User=root
-WorkingDirectory=/home/ec2-user/truthMarket/nautilus-app
+WorkingDirectory=/home/ec2-user/sealtrust-enclave
 ExecStart=/usr/bin/nitro-cli run-enclave \
   --eif-path nautilus.eif \
   --cpu-count 2 \
@@ -416,8 +416,8 @@ sudo systemctl start nginx
 ### Step 11: Update Frontend Configuration
 
 ```env
-# In truthmarket-frontend-v3/.env.production
-NEXT_PUBLIC_NAUTILUS_URL=https://nautilus.yourdomain.com
+# In sealtrust-frontend/.env.production
+NEXT_PUBLIC_NAUTILUS_URL=https://nautilus.sealtrust.app
 ```
 
 ---
@@ -527,7 +527,7 @@ sudo yum update -y
 sudo yum update aws-nitro-enclaves-cli -y
 
 # Rebuild enclave with latest code
-cd ~/truthMarket/nautilus-app
+cd ~/sealtrust-enclave
 git pull
 cargo build --release
 sudo docker build -t nautilus-enclave:latest .
@@ -687,4 +687,4 @@ curl http://localhost:3000/health_check
 
 ---
 
-**Remember:** Nautilus provides the "trust anchor" for TruthMarket - it proves metadata verification happened in tamper-proof hardware!
+**Remember:** Nautilus provides the "trust anchor" for SealTrust - it proves metadata verification happened in tamper-proof hardware!

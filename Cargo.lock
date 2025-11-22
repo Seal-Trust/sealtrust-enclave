@@ -1911,6 +1911,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
+name = "sealtrust-nautilus"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aws-nitro-enclaves-nsm-api",
+ "axum",
+ "bcs",
+ "fastcrypto",
+ "hex",
+ "hyper 0.14.32",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_repr",
+ "serde_yaml",
+ "sha2 0.10.9",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "sec1"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2574,31 +2599,6 @@ dependencies = [
  "thread_local",
  "tracing-core",
  "tracing-log",
-]
-
-[[package]]
-name = "truthmarket-nautilus"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "aws-nitro-enclaves-nsm-api",
- "axum",
- "bcs",
- "fastcrypto",
- "hex",
- "hyper 0.14.32",
- "rand",
- "reqwest",
- "serde",
- "serde_bytes",
- "serde_json",
- "serde_repr",
- "serde_yaml",
- "sha2 0.10.9",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

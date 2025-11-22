@@ -1,10 +1,10 @@
 [package]
-name = "truthmarket-nautilus"
+name = "sealtrust-nautilus"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "truthmarket_nautilus"
+name = "sealtrust_nautilus"
 path = "src/lib.rs"
 
 [[bin]]

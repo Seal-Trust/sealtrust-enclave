@@ -1,7 +1,7 @@
 // Copyright (c), Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Local development server for TruthMarket Nautilus enclave
+//! Local development server for SealTrust Nautilus enclave
 //!
 //! This is a mock server for local testing WITHOUT AWS Nitro Enclave.
 //! For production, deploy using the full Nautilus infrastructure.
@@ -13,7 +13,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tower_http::cors::{CorsLayer, Any};
-use truthmarket_nautilus::{process_data, verify_metadata, get_attestation, health_check, AppState};
+use sealtrust_nautilus::{process_data, verify_metadata, get_attestation, health_check, AppState};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     let listener = TcpListener::bind(addr).await?;
 
-    println!("🚀 TruthMarket Nautilus server listening on http://{}", addr);
+    println!("🚀 SealTrust Nautilus server listening on http://{}", addr);
     println!("📡 Endpoints:");
     println!("   POST /verify_metadata - [V3] Verify and sign metadata (RECOMMENDED)");
     println!("   POST /process_data    - [Legacy] Verify dataset and return signed hash");
