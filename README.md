@@ -248,7 +248,7 @@ sudo systemctl start nautilus
 
 | Component | Value |
 |-----------|-------|
-| **Enclave URL** | `http://13.217.44.235:3000` |
+| **Enclave URL** | [`https://nautilus.sealtrust.app/health`](https://nautilus.sealtrust.app/health) |
 | **Instance Type** | `m5a.xlarge` |
 | **Region** | `ap-northeast-1` |
 | **CPU** | 2 cores dedicated |
