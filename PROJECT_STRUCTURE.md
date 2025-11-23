@@ -25,13 +25,6 @@ nautilus-app/
 │   ├── Containerfile.aws  # AWS Nitro enclave build (production)
 │   ├── Dockerfile.dev     # Local development container
 │   └── docker-compose.yml # Docker Compose for local dev
-│
-├── docs/                  # Documentation
-│   ├── AWS_DEPLOYMENT.md          # Complete AWS deployment guide
-│   ├── AWS_DEPLOYMENT_SUMMARY.md  # Quick AWS reference
-│   ├── GETTING_STARTED.md         # Quick start guide
-│   └── LOCAL_DEV_SETUP.md         # Local development setup
-│
 ├── Cargo.toml             # Rust dependencies
 ├── Makefile.aws           # Build commands for AWS
 ├── allowed_endpoints.yaml # Network whitelist for enclave
@@ -209,39 +202,6 @@ docker compose up
 **Services:**
 - `nautilus-dev` - Nautilus server in DEV_MODE
 
----
-
-## 📚 Documentation Reference
-
-### `docs/AWS_DEPLOYMENT.md`
-Complete production deployment guide with:
-- Step-by-step AWS setup
-- Enclave build & deployment
-- On-chain registration
-- Monitoring & troubleshooting
-- **10 detailed FAQs** (CPU/memory, domain setup, costs, etc.)
-
-### `docs/AWS_DEPLOYMENT_SUMMARY.md`
-Quick reference for:
-- Files overview
-- Quick start commands
-- What each script does
-- Verification steps
-
-### `docs/GETTING_STARTED.md`
-Quick start guide for developers:
-- 5-minute setup
-- Local testing
-- Integration with frontend
-
-### `docs/LOCAL_DEV_SETUP.md`
-Local development guide:
-- Prerequisites
-- Running with Cargo
-- Running with Docker
-- Testing endpoints
-
----
 
 ## 🔧 Build Commands
 
@@ -374,10 +334,6 @@ docker compose up  # ✅ Correct
 ---
 
 ## 📞 Need Help?
-
-1. **Local dev issues:** See `docs/LOCAL_DEV_SETUP.md`
-2. **AWS deployment:** See `docs/AWS_DEPLOYMENT.md`
-3. **Quick reference:** See `docs/AWS_DEPLOYMENT_SUMMARY.md`
 4. **General questions:** See `README.md`
 
 ---
