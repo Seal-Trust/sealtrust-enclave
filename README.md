@@ -89,13 +89,13 @@ curl -X POST http://localhost:3000/verify_metadata \
 
 ```bash
 # Build enclave image
-make build
+make -f Makefile.aws build
 
 # Run enclave
-make run
+make -f Makefile.aws run
 
 # Check status
-make status
+make -f Makefile.aws status
 ```
 
 ---
@@ -104,12 +104,12 @@ make status
 
 | Command | Description |
 |---------|-------------|
-| `make build` | Build .eif enclave image |
-| `make run` | Run enclave (production) |
-| `make run-debug` | Run with debug console |
-| `make clean` | Remove build artifacts |
-| `make status` | Check enclave status |
-| `make pcrs` | View PCR measurements |
+| `make -f Makefile.aws build` | Build .eif enclave image |
+| `make -f Makefile.aws run` | Run enclave (production) |
+| `make -f Makefile.aws run-debug` | Run with debug console |
+| `make -f Makefile.aws clean` | Remove build artifacts |
+| `make -f Makefile.aws status` | Check enclave status |
+| `make -f Makefile.aws pcrs` | View PCR measurements |
 
 ---
 
@@ -216,10 +216,10 @@ git clone https://github.com/Seal-Trust/sealtrust-enclave
 cd sealtrust-enclave
 
 # 3. Build enclave
-make build
+make -f Makefile.aws build
 
 # 4. Run
-make run
+make -f Makefile.aws run
 ```
 
 <details>
